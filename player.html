@@ -21,7 +21,7 @@
     Your browser does not support the video tag.
   </video>
 
-  <script>
+  <<script>
   const params = new URLSearchParams(window.location.search);
   const videoUrl = params.get("video");
   const seekTime = parseFloat(params.get("t")) || 0;
@@ -35,11 +35,19 @@
     player.ready(() => {
       player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
 
+      // Listen for when the video is ready to seek
       player.on("loadedmetadata", () => {
         if (seekTime > 0) {
           player.currentTime(seekTime);
         }
-        player.play();
+
+        // Attempt to autoplay
+        const playPromise = player.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.warn("Autoplay blocked:", error);
+          });
+        }
       });
     });
   } else {
@@ -49,6 +57,7 @@
     );
   }
 </script>
+
 
 </body>
 </html>
