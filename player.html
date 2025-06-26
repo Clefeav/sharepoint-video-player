@@ -2,64 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Custom Video Player</title>
-  <link href="https://vjs.zencdn.net/8.0.4/video-js.css" rel="stylesheet" />
+  <title>Simple HTML5 Video Player</title>
 </head>
 <body>
-  <h2>Custom Video Player</h2>
+  <h2>Simple Video Player</h2>
 
   <video
-    id="my-video"
-    class="video-js"
+    id="video"
     controls
     preload="auto"
     width="800"
     height="450"
-    data-setup="{}"
   >
-    <source id="video-source" src="" type="video/mp4" />
+    <source id="source" src="" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 
-  <!-- Load video.js and delay setup until it's ready -->
-  <script src="https://vjs.zencdn.net/8.0.4/video.min.js" onload="initPlayer()"></script>
-
   <script>
-    function initPlayer() {
+    window.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
       const videoUrl = params.get("video");
       const seekTime = parseFloat(params.get("t")) || 0;
 
-      if (!videoUrl) {
+      if (videoUrl) {
+        const video = document.getElementById("video");
+        const source = document.getElementById("source");
+
+        source.src = decodeURIComponent(videoUrl);
+
+        video.load();
+
+        video.addEventListener("loadedmetadata", () => {
+          if (seekTime > 0 && seekTime < video.duration) {
+            video.currentTime = seekTime;
+          }
+          video.play().catch((e) => {
+            console.warn("Autoplay may have been blocked:", e);
+          });
+        });
+      } else {
         document.body.insertAdjacentHTML(
-          'beforeend',
+          "beforeend",
           "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
         );
-        return;
       }
-
-      const source = document.getElementById("video-source");
-      source.src = decodeURIComponent(videoUrl);
-
-      const player = videojs("my-video");
-
-      player.ready(() => {
-        player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
-
-        player.on("loadedmetadata", () => {
-          if (seekTime > 0) {
-            player.currentTime(seekTime);
-          }
-
-          const playPromise = player.play();
-          if (playPromise !== undefined) {
-            playPromise.catch((error) => {
-              console.warn("Autoplay blocked:", error);
-            });
-          }
-        });
-      });
-    }
+    });
   </script>
 </body>
 </html>
