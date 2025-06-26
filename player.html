@@ -21,43 +21,45 @@
     Your browser does not support the video tag.
   </video>
 
-  <!-- Load Video.js -->
-  <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
+  <!-- Load video.js and delay setup until it's ready -->
+  <script src="https://vjs.zencdn.net/8.0.4/video.min.js" onload="initPlayer()"></script>
 
-  <!-- Custom Logic AFTER Video.js is loaded -->
   <script>
-    window.onload = function () {
+    function initPlayer() {
       const params = new URLSearchParams(window.location.search);
       const videoUrl = params.get("video");
       const seekTime = parseFloat(params.get("t")) || 0;
 
-      if (videoUrl) {
-        const player = videojs("my-video");
-
-        player.ready(() => {
-          player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
-
-          player.on("loadedmetadata", () => {
-            if (seekTime > 0) {
-              player.currentTime(seekTime);
-            }
-
-            // Try to autoplay
-            const playPromise = player.play();
-            if (playPromise !== undefined) {
-              playPromise.catch((error) => {
-                console.warn("Autoplay blocked:", error);
-              });
-            }
-          });
-        });
-      } else {
+      if (!videoUrl) {
         document.body.insertAdjacentHTML(
           'beforeend',
           "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
         );
+        return;
       }
-    };
+
+      const source = document.getElementById("video-source");
+      source.src = decodeURIComponent(videoUrl);
+
+      const player = videojs("my-video");
+
+      player.ready(() => {
+        player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
+
+        player.on("loadedmetadata", () => {
+          if (seekTime > 0) {
+            player.currentTime(seekTime);
+          }
+
+          const playPromise = player.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((error) => {
+              console.warn("Autoplay blocked:", error);
+            });
+          }
+        });
+      });
+    }
   </script>
 </body>
 </html>
