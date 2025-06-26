@@ -21,43 +21,43 @@
     Your browser does not support the video tag.
   </video>
 
-  <<script>
-  const params = new URLSearchParams(window.location.search);
-  const videoUrl = params.get("video");
-  const seekTime = parseFloat(params.get("t")) || 0;
+  <!-- Load Video.js -->
+  <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
 
-  if (videoUrl) {
-    const source = document.getElementById("video-source");
-    source.src = decodeURIComponent(videoUrl);
+  <!-- Custom Logic AFTER Video.js is loaded -->
+  <script>
+    window.onload = function () {
+      const params = new URLSearchParams(window.location.search);
+      const videoUrl = params.get("video");
+      const seekTime = parseFloat(params.get("t")) || 0;
 
-    const player = videojs("my-video");
+      if (videoUrl) {
+        const player = videojs("my-video");
 
-    player.ready(() => {
-      player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
+        player.ready(() => {
+          player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
 
-      // Listen for when the video is ready to seek
-      player.on("loadedmetadata", () => {
-        if (seekTime > 0) {
-          player.currentTime(seekTime);
-        }
+          player.on("loadedmetadata", () => {
+            if (seekTime > 0) {
+              player.currentTime(seekTime);
+            }
 
-        // Attempt to autoplay
-        const playPromise = player.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            console.warn("Autoplay blocked:", error);
+            // Try to autoplay
+            const playPromise = player.play();
+            if (playPromise !== undefined) {
+              playPromise.catch((error) => {
+                console.warn("Autoplay blocked:", error);
+              });
+            }
           });
-        }
-      });
-    });
-  } else {
-    document.body.insertAdjacentHTML(
-      'beforeend',
-      "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
-    );
-  }
-</script>
-
-
+        });
+      } else {
+        document.body.insertAdjacentHTML(
+          'beforeend',
+          "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
+        );
+      }
+    };
+  </script>
 </body>
 </html>
