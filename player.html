@@ -21,25 +21,34 @@
     Your browser does not support the video tag.
   </video>
 
-  <script src="https://vjs.zencdn.net/8.0.4/video.min.js"></script>
   <script>
-    const params = new URLSearchParams(window.location.search);
-    const videoUrl = params.get("video");
-    if (videoUrl) {
-      const source = document.getElementById("video-source");
-      source.src = decodeURIComponent(videoUrl);
+  const params = new URLSearchParams(window.location.search);
+  const videoUrl = params.get("video");
+  const seekTime = parseFloat(params.get("t")) || 0;
 
-      const player = videojs("my-video");
-      player.ready(() => {
-        player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
+  if (videoUrl) {
+    const source = document.getElementById("video-source");
+    source.src = decodeURIComponent(videoUrl);
+
+    const player = videojs("my-video");
+
+    player.ready(() => {
+      player.src({ type: "video/mp4", src: decodeURIComponent(videoUrl) });
+
+      player.on("loadedmetadata", () => {
+        if (seekTime > 0) {
+          player.currentTime(seekTime);
+        }
         player.play();
       });
-    } else {
-      document.body.insertAdjacentHTML(
-        'beforeend',
-        "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
-      );
-    }
-  </script>
+    });
+  } else {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
+    );
+  }
+</script>
+
 </body>
 </html>
