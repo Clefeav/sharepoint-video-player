@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>XR Feedback Video Player</title>
+</head>
+<body>
+  <h2>Xbox Research Feedback Video Player</h2>
+
+  <video
+    id="video"
+    controls
+    preload="auto"
+    width="800"
+    height="450"
+  >
+    <source id="source" src="" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      const videoUrl = params.get("video");
+      const seekTime = parseFloat(params.get("t")) || 0;
+
+      if (videoUrl) {
+        const video = document.getElementById("video");
+        const source = document.getElementById("source");
+
+        source.src = decodeURIComponent(videoUrl);
+
+        video.load();
+
+        video.addEventListener("loadedmetadata", () => {
+          if (seekTime > 0 && seekTime < video.duration) {
+            video.currentTime = seekTime;
+          }
+          video.play().catch((e) => {
+            console.warn("Autoplay may have been blocked:", e);
+          });
+        });
+      } else {
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          "<p style='color:red;'>No video URL provided in ?video= parameter.</p>"
+        );
+      }
+    });
+  </script>
+</body>
+</html>
