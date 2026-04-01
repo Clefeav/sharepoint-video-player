@@ -18,18 +18,28 @@
     Your browser does not support the video tag.
   </video>
 
+  <!-- New Skip Back Button -->
+  <div style="margin-top: 10px;">
+    <button id="rewindBtn">⏪ Back 10s</button>
+  </div>
+
   <script>
     window.addEventListener("DOMContentLoaded", () => {
       const params = new URLSearchParams(window.location.search);
       const videoUrl = params.get("video");
       const seekTime = parseFloat(params.get("t")) || 0;
 
+      const video = document.getElementById("video");
+      const source = document.getElementById("source");
+      const rewindBtn = document.getElementById("rewindBtn");
+
+      // Hook up rewind button
+      rewindBtn.addEventListener("click", () => {
+        video.currentTime = Math.max(0, video.currentTime - 10);
+      });
+
       if (videoUrl) {
-        const video = document.getElementById("video");
-        const source = document.getElementById("source");
-
         source.src = decodeURIComponent(videoUrl);
-
         video.load();
 
         video.addEventListener("loadedmetadata", () => {
