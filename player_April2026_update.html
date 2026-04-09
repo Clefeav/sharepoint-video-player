@@ -3,24 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <title>XR Feedback Video Player</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 1rem;
+    }
+
+    .player-shell {
+      display: inline-block;
+      position: relative;
+    }
+
+    .rewind-btn {
+      position: absolute;
+      left: 0.75rem;
+      bottom: 3.5rem;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.5rem 0.8rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .rewind-btn:hover,
+    .rewind-btn:focus-visible {
+      background: rgba(0, 0, 0, 0.85);
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+  </style>
 </head>
 <body>
   <h2>Xbox Research Feedback Video Player</h2>
 
-  <video
-    id="video"
-    controls
-    preload="auto"
-    width="800"
-    height="450"
-  >
-    <source id="source" src="" type="video/mp4" />
-    Your browser does not support the video tag.
-  </video>
-
-  <!-- New Skip Back Button -->
-  <div style="margin-top: 10px;">
-    <button id="rewindBtn">⏪ Back 10s</button>
+  <div class="player-shell">
+    <video
+      id="video"
+      controls
+      preload="auto"
+      width="800"
+      height="450"
+    >
+      <source id="source" src="" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <button
+      id="rewindButton"
+      class="rewind-btn"
+      type="button"
+      aria-label="Rewind 10 seconds"
+      title="Rewind 10 seconds (J / Left Arrow)"
+    >
+      &lt;&lt; 10s
+    </button>
   </div>
 
   <script>
@@ -28,18 +65,27 @@
       const params = new URLSearchParams(window.location.search);
       const videoUrl = params.get("video");
       const seekTime = parseFloat(params.get("t")) || 0;
-
       const video = document.getElementById("video");
       const source = document.getElementById("source");
-      const rewindBtn = document.getElementById("rewindBtn");
+      const rewindButton = document.getElementById("rewindButton");
 
-      // Hook up rewind button
-      rewindBtn.addEventListener("click", () => {
+      const rewindBy10Seconds = () => {
         video.currentTime = Math.max(0, video.currentTime - 10);
+      };
+
+      rewindButton.addEventListener("click", rewindBy10Seconds);
+
+      document.addEventListener("keydown", (event) => {
+        const key = event.key.toLowerCase();
+        if (key === "arrowleft" || key === "j") {
+          event.preventDefault();
+          rewindBy10Seconds();
+        }
       });
 
       if (videoUrl) {
         source.src = decodeURIComponent(videoUrl);
+
         video.load();
 
         video.addEventListener("loadedmetadata", () => {
