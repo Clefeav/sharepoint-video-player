@@ -10,14 +10,19 @@
     }
 
     .player-shell {
-      display: inline-block;
-      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.75rem;
     }
 
-    .rewind-btn {
-      position: absolute;
-      left: 0.75rem;
-      bottom: 3.5rem;
+    .transport-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .transport-btn {
+      position: relative;
       border: 0;
       border-radius: 999px;
       padding: 0.5rem 0.8rem;
@@ -27,11 +32,35 @@
       cursor: pointer;
     }
 
-    .rewind-btn:hover,
-    .rewind-btn:focus-visible {
+    .transport-btn::after {
+      content: attr(data-hotkey);
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 0.35rem);
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(0, 0, 0, 0.9);
+      color: #fff;
+      font-size: 0.75rem;
+      line-height: 1;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.35rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms ease, transform 120ms ease;
+    }
+
+    .transport-btn:hover,
+    .transport-btn:focus-visible {
       background: rgba(0, 0, 0, 0.85);
       outline: 2px solid #fff;
       outline-offset: 2px;
+    }
+
+    .transport-btn:hover::after,
+    .transport-btn:focus-visible::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
@@ -49,15 +78,48 @@
       <source id="source" src="" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
-    <button
-      id="rewindButton"
-      class="rewind-btn"
-      type="button"
-      aria-label="Rewind 10 seconds"
-      title="Rewind 10 seconds (J / Left Arrow)"
-    >
-      &lt;&lt; 10s
-    </button>
+    <div class="transport-controls" aria-label="Video skip controls">
+      <button
+        id="rewind30Button"
+        class="transport-btn"
+        type="button"
+        aria-label="Rewind 30 seconds"
+        title="Rewind 30 seconds"
+        data-hotkey="Shift+Left Arrow or U"
+      >
+        Rewind 30s
+      </button>
+      <button
+        id="rewind10Button"
+        class="transport-btn"
+        type="button"
+        aria-label="Rewind 10 seconds"
+        title="Rewind 10 seconds (J / Left Arrow)"
+        data-hotkey="Left Arrow or J"
+      >
+        Rewind 10s
+      </button>
+      <button
+        id="forward10Button"
+        class="transport-btn"
+        type="button"
+        aria-label="Fast forward 10 seconds"
+        title="Fast forward 10 seconds"
+        data-hotkey="Right Arrow or L"
+      >
+        Fast forward 10s
+      </button>
+      <button
+        id="forward30Button"
+        class="transport-btn"
+        type="button"
+        aria-label="Fast forward 30 seconds"
+        title="Fast forward 30 seconds"
+        data-hotkey="Shift+Right Arrow or O"
+      >
+        Fast forward 30s
+      </button>
+    </div>
   </div>
 
   <script>
@@ -67,19 +129,56 @@
       const seekTime = parseFloat(params.get("t")) || 0;
       const video = document.getElementById("video");
       const source = document.getElementById("source");
-      const rewindButton = document.getElementById("rewindButton");
+      const rewind30Button = document.getElementById("rewind30Button");
+      const rewind10Button = document.getElementById("rewind10Button");
+      const forward10Button = document.getElementById("forward10Button");
+      const forward30Button = document.getElementById("forward30Button");
 
-      const rewindBy10Seconds = () => {
-        video.currentTime = Math.max(0, video.currentTime - 10);
+      const seekBy = (seconds) => {
+        const targetTime = video.currentTime + seconds;
+        if (!Number.isFinite(video.duration) || video.duration <= 0) {
+          video.currentTime = Math.max(0, targetTime);
+          return;
+        }
+
+        video.currentTime = Math.min(Math.max(0, targetTime), video.duration);
       };
 
-      rewindButton.addEventListener("click", rewindBy10Seconds);
+      rewind30Button.addEventListener("click", () => seekBy(-30));
+      rewind10Button.addEventListener("click", () => seekBy(-10));
+      forward10Button.addEventListener("click", () => seekBy(10));
+      forward30Button.addEventListener("click", () => seekBy(30));
 
       document.addEventListener("keydown", (event) => {
         const key = event.key.toLowerCase();
+        if (event.shiftKey && key === "arrowleft") {
+          event.preventDefault();
+          seekBy(-30);
+          return;
+        }
+        if (event.shiftKey && key === "arrowright") {
+          event.preventDefault();
+          seekBy(30);
+          return;
+        }
+        if (key === "u") {
+          event.preventDefault();
+          seekBy(-30);
+          return;
+        }
+        if (key === "o") {
+          event.preventDefault();
+          seekBy(30);
+          return;
+        }
         if (key === "arrowleft" || key === "j") {
           event.preventDefault();
-          rewindBy10Seconds();
+          seekBy(-10);
+          return;
+        }
+        if (key === "arrowright" || key === "l") {
+          event.preventDefault();
+          seekBy(10);
         }
       });
 
