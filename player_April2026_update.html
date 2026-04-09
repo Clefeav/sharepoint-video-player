@@ -65,6 +65,7 @@
 
     .share-btn {
       background: #0a5a9c;
+      margin-left: auto;
     }
 
     .share-btn:hover,
@@ -306,6 +307,7 @@
       const shareLinkField = document.getElementById("shareLinkField");
       const copyShareLinkButton = document.getElementById("copyShareLinkButton");
       const shareStatus = document.getElementById("shareStatus");
+      let shouldResumePlaybackAfterShare = false;
 
       const activeVideoUrl = videoUrl || source.src || "";
 
@@ -348,6 +350,8 @@
       };
 
       const openShareOverlay = () => {
+        shouldResumePlaybackAfterShare = !video.paused && !video.ended;
+        video.pause();
         shareOverlay.hidden = false;
         shareLinkField.value = "";
         showShareStatus("Select a link type to generate a URL.", false);
@@ -355,6 +359,12 @@
 
       const closeShareOverlay = () => {
         shareOverlay.hidden = true;
+        if (shouldResumePlaybackAfterShare) {
+          shouldResumePlaybackAfterShare = false;
+          video.play().catch(() => {
+            showShareStatus("Playback resume was blocked by the browser.", true);
+          });
+        }
       };
 
       createShareLinkButton.addEventListener("click", openShareOverlay);
@@ -417,6 +427,10 @@
         if (!shareOverlay.hidden && event.key === "Escape") {
           event.preventDefault();
           closeShareOverlay();
+          return;
+        }
+
+        if (!shareOverlay.hidden) {
           return;
         }
 
